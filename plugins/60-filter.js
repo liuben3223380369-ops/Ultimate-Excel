@@ -107,9 +107,9 @@ MX.plug.register({
     };
 
     /* UI 入口 */
-    window.openAutoFilter = function(){
+    window.openAutoFilter = async function(){
       const s = WB.sheets[WB.active];
-      const r = prompt('筛选范围 (如 A1:F100):', s._filter ? s._filter.range : 'A1:F100');
+      const r = await MX.ui.prompt('筛选范围 (如 A1:F100):', s._filter ? s._filter.range : 'A1:F100', '自动筛选');
       if(!r) return;
       const a = parseRef(r.split(':')[0]), b = parseRef(r.split(':')[1]||r.split(':')[0]);
       applyFilter({ range:r });

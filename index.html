@@ -160,6 +160,12 @@ input[type=color].tcol{width:26px;height:26px;padding:0;border:1px solid #cfd8d2
   <div style="font-size:11px;color:#888;margin-left:90px">Excel 工作表名最多 31 个字符，不可与同名表重名</div>
 </div><div class="foot"><button class="btn ghost" data-close>取消</button><button class="btn" id="btnRenameSheetOk">确定</button></div></div></div>
 
+<!-- 通用确认/输入弹窗（替代原生 confirm/prompt：Electron/WebView/沙箱 iframe 下原生对话框会被拦截导致功能失效） -->
+<div class="modal" id="mxAskModal"><div class="box" style="width:400px"><h3 id="mxAskTitle">确认</h3><div class="body">
+  <div id="mxAskMsg" style="line-height:1.7;white-space:pre-wrap"></div>
+  <div class="frow" id="mxAskInputRow" style="display:none;margin-top:10px"><label>输入</label><input type="text" id="mxAskInput"></div>
+</div><div class="foot"><button class="btn ghost" data-close>取消</button><button class="btn" id="mxAskOk">确定</button></div></div></div>
+
 <!-- 图表选择器 (10-charts.js) -->
 <div class="modal" id="modalChart"><div class="box" style="width:760px">
 <div class="head">插入图表<div class="x" data-close>×</div></div>
@@ -1337,11 +1343,11 @@ $('grid').addEventListener('contextmenu',e=>{
   const td=e.target.closest('td');const th=e.target.closest('thead th[data-c]');const rh=e.target.closest('.rowhead');
   if(th){const c=+th.dataset.c;return showCtx(e.clientX,e.clientY,[
     {label:'在左侧插入列',fn:()=>shiftRC('col',c,1)},{label:'删除此列',fn:()=>delRC('col',c,1)},{label:'清空此列',fn:()=>{setSel(0,c,SH().nr-1,c);clearSelection()}},'-',
-    {label:'列宽…',fn:()=>{const w=prompt('列宽（像素）：',colW(c));if(w){pushUndo();SH().colW[c]=Math.max(30,+w||88);buildGrid();autosave()}}},
+    {label:'列宽…',fn:async()=>{const w=await MX.ui.prompt('列宽（像素）：',colW(c),'列宽');if(w){pushUndo();SH().colW[c]=Math.max(30,+w||88);buildGrid();autosave()}}},
   ])}
   if(rh){const r=+rh.dataset.r;return showCtx(e.clientX,e.clientY,[
     {label:'在上方插入行',fn:()=>shiftRC('row',r,1)},{label:'删除此行',fn:()=>delRC('row',r,1)},{label:'清空此行',fn:()=>{setSel(r,0,r,SH().nc-1);clearSelection()}},'-',
-    {label:'行高…',fn:()=>{const h=prompt('行高（像素）：',rowH(r));if(h){pushUndo();SH().rowH[r]=Math.max(18,+h||26);buildGrid();autosave()}}},
+    {label:'行高…',fn:async()=>{const h=await MX.ui.prompt('行高（像素）：',rowH(r),'行高');if(h){pushUndo();SH().rowH[r]=Math.max(18,+h||26);buildGrid();autosave()}}},
   ])}
   if(!td)return;
   const r=+td.dataset.r,c=+td.dataset.c,m=mergeAt(r,c);
@@ -1820,12 +1826,38 @@ $('btnRepAll').addEventListener('click',replaceAll);
 $('findWhat').addEventListener('keydown',e=>{if(e.key==='Enter')findNext();e.stopPropagation()});
 function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',1600)}
 
+/* ================= 应用内对话框（MX.ui） =================
+   原生 confirm/prompt 在 Electron、WebView、沙箱 iframe 中会被拦截或静默返回 false，
+   导致「新建」等依赖确认框的功能完全失效。此 API 用应用内弹窗实现，任何环境都可靠。 */
+function mxAsk(opt){
+  return new Promise(res=>{
+    let settled=false;
+    const done=v=>{if(settled)return;settled=true;clearInterval(poll);closeModal();ok.onclick=null;inp.onkeydown=null;res(v)};
+    $('mxAskTitle').textContent=opt.title||'提示';
+    $('mxAskMsg').textContent=opt.msg||'';
+    const row=$('mxAskInputRow'),inp=$('mxAskInput'),ok=$('mxAskOk');
+    if(opt.input){row.style.display='flex';inp.value=opt.def!=null?String(opt.def):''}
+    else{row.style.display='none';inp.value=''}
+    openModal('mxAskModal');
+    ok.onclick=()=>done(opt.input?inp.value:true);
+    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();ok.click()}if(e.key==='Escape')done(opt.input?null:false)};
+    /* 用户点「取消」/×/遮罩关闭弹窗时也要兑现 Promise */
+    const poll=setInterval(()=>{const m=$('mxAskModal');if(m.style.display==='none'||!m.style.display)done(opt.input?null:false)},120);
+  });
+}
+window.MX=window.MX||{};
+MX.ui={
+  confirm:(msg,title)=>mxAsk({title:title||'确认',msg}),
+  prompt:(msg,def,title)=>mxAsk({title:title||'输入',msg,input:true,def}),
+  alert:(msg,title)=>mxAsk({title:title||'提示',msg}),
+};
+
 /* ================= 缩放滚轮（Ctrl+滚轮） ================= */
 $('gridWrap').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();zoomBy(e.deltaY<0?1:-1)}},{passive:false});
 
 /* ================= 新建/初始化 ================= */
-function newWorkbook(ask){
-  if(ask&&!confirm('新建空白工作簿？当前内容将被替换（请先保存）。'))return;
+async function newWorkbook(ask){
+  if(ask&&!(await MX.ui.confirm('新建空白工作簿？当前内容将被替换（请先保存）。','新建工作簿')))return;
   WB={name:'工作簿1',sheets:[newSheet('Sheet1')],active:0,zoom:1};
   hfBuild();buildGrid();renderTabs();autosave();
   toast('已新建空白工作簿');
@@ -1876,29 +1908,31 @@ function demoData(){
 /* ================= 注册插件 UI ================= */
 function registerPluginUI(){
   if(!window.MX || !MX.plug) return;
-  /* 把 addRibbon 加入的按钮塞入 ribbon */
+  /* 把 addRibbon 加入的按钮塞入工具栏。
+     注意：容器是 id="ribbon"（不是 .ribbon 类）——旧代码用 querySelector('.ribbon')
+     永远返回 null，导致全部 16 个插件按钮（含宏管理器）从未渲染。 */
   const items = MX.plug._ribbonItems || [];
-  const groups = {};
-  for(const it of items){
-    groups[it.group||'misc'] = groups[it.group||'misc'] || [];
-    groups[it.group||'misc'].push(it);
-  }
-  const ribbonEl = document.querySelector('.ribbon');
-  if(ribbonEl){
-    const groupMap = { file:'📁 文件', edit:'✏️ 编辑', format:'🎨 格式', insert:'➕ 插入', data:'📊 数据', review:'🔍 审阅', view:'👁 视图', misc:'🧩 插件' };
-    for(const [g, list] of Object.entries(groups)){
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'rGroup';
-      groupDiv.innerHTML = `<div class="rGName">${esc(groupMap[g]||g)}</div>`;
-      list.forEach(it=>{
-        const b = document.createElement('button');
-        b.className = 'rBtn';
-        b.innerHTML = `<div class="rBI">${it.icon||'•'}</div><div class="rBN">${esc(it.label)}</div>`;
-        b.onclick = it.fn;
-        groupDiv.appendChild(b);
-      });
-      ribbonEl.appendChild(groupDiv);
+  const rb = $('ribbon');
+  if(rb && items.length){
+    rb.appendChild(Object.assign(document.createElement('span'),{className:'tsep'}));
+    const seen={};
+    for(const it of items){
+      const g=it.group||'misc';
+      if(seen[g]) rb.appendChild(Object.assign(document.createElement('span'),{className:'tsep'}));
+      seen[g]=1;
+      const b = document.createElement('button');
+      b.className = 'tbtn';
+      b.innerHTML = (it.icon?it.icon+' ':'')+esc(it.label);
+      b.title = it.label + (it.group?`（${it.group}）`:'');
+      b.onclick = it.fn;
+      rb.appendChild(b);
     }
+  }
+  /* 全部插件入口同时注入「插件」菜单，保证任何情况下都能找到功能 */
+  if(items.length){
+    MENUS['插件'] = items.map(it=>({label:(it.icon?it.icon+' ':'')+it.label, fn:it.fn}));
+    $('menuBar').querySelectorAll('.menu').forEach(m=>m.remove());
+    buildMenus();
   }
   /* 上下文菜单 */
   const ctxList = MX.plug._ctxItems || [];
@@ -1931,9 +1965,11 @@ async function startApp(){
     window.addEventListener('beforeunload',()=>{try{localStorage.setItem('myexcel-autosave',JSON.stringify(WB))}catch(_){}});
     document.addEventListener('contextmenu',e=>{if(!e.target.closest('#grid')&&!e.target.closest('.sTab'))e.preventDefault()});
     bindElectronBridge();
-    /* 启动插件系统 */
+    /* 启动插件系统：任何插件失败都不能阻断 UI 注册与后续初始化 */
     if(window.MX && MX.plug){
-      await MX.plug.boot(WB);
+      try{
+        await MX.plug.boot(WB);
+      }catch(e){ console.warn('plugin boot:', e); }
       /* 注入 HF 自定义函数 */
       if(MX._pendingHFFns && window.HyperFormula && HF.customFunctions){
         try{
@@ -1945,8 +1981,8 @@ async function startApp(){
           refreshAll();
         }catch(e){ console.warn('HF customFunctions:', e); }
       }
-      /* 注册插件贡献的工具栏按钮/上下文菜单 */
-      registerPluginUI();
+      /* 注册插件贡献的工具栏按钮/上下文菜单（必须无条件执行） */
+      try{ registerPluginUI(); }catch(e){ console.warn('registerPluginUI:', e); }
     }
     const m=$('loadMask');m.classList.add('hide');setTimeout(()=>m.remove(),300);
     toast('已就绪 · 支持 400+ 函数 · 16 个插件 · 兼容 xlsx/xls');

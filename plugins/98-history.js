@@ -59,7 +59,7 @@ MX.plug.register({
         return `<div data-i="${i}" style="padding:6px;border-bottom:1px solid #eee;cursor:pointer">📌 ${date} <button data-restore="${i}" class="btn">恢复</button> <button data-diff="${i}" class="btn ghost">比较</button></div>`;
       }).join('') : '<i>暂无历史</i>';
       $('histList').querySelectorAll('[data-restore]').forEach(b=>{
-        b.onclick = e=>{ e.stopPropagation(); const i=+b.dataset.restore; if(confirm('恢复到此版本？当前未保存的更改会丢失')){ restore(loadList()[i].snap); closeModal('modalHistory'); }};
+        b.onclick = async e=>{ e.stopPropagation(); const i=+b.dataset.restore; if(await MX.ui.confirm('恢复到此版本？当前未保存的更改会丢失','恢复版本')){ restore(loadList()[i].snap); closeModal('modalHistory'); }};
       });
       $('histList').querySelectorAll('[data-diff]').forEach(b=>{
         b.onclick = e=>{ e.stopPropagation(); const i=+b.dataset.diff; showDiff(loadList()[i].snap); };
@@ -96,14 +96,16 @@ MX.plug.register({
     document.addEventListener('keydown', e=>{
       if(e.ctrlKey && e.shiftKey && e.key==='S'){
         e.preventDefault();
-        const name = prompt('为当前快照命名：', dayjs().format('YYYY-MM-DD HH:mm'));
-        if(name){
-          const list = loadList();
-          list.unshift({ ts: Date.now(), snap: snapshot(), name });
-          list.length = MAX;
-          localStorage.setItem('myexcel.hist.'+WB.name, JSON.stringify(list));
-          toast('已保存命名快照');
-        }
+        (async()=>{
+          const name = await MX.ui.prompt('为当前快照命名：', dayjs().format('YYYY-MM-DD HH:mm'), '命名快照');
+          if(name){
+            const list = loadList();
+            list.unshift({ ts: Date.now(), snap: snapshot(), name });
+            list.length = MAX;
+            localStorage.setItem('myexcel.hist.'+WB.name, JSON.stringify(list));
+            toast('已保存命名快照');
+          }
+        })();
       }
     });
 

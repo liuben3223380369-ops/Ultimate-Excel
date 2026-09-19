@@ -47,9 +47,9 @@ MX.plug.register({
       refreshCell(r,c);
     }
 
-    window.addNoteToSelection = function(){
+    window.addNoteToSelection = async function(){
       const author = localStorage.getItem('myexcel.user') || '我';
-      const text = prompt('批注内容：');
+      const text = await MX.ui.prompt('批注内容：','','添加批注');
       if(text==null) return;
       addNote(cur.r, cur.c, author, text);
       toast('已添加批注');

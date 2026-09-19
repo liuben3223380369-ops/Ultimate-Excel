@@ -43,7 +43,11 @@
     for(const p of plugins){
       try{
         const t0=performance.now();
-        await p.init(workbench, MX);
+        /* 单插件 8 秒超时：某个插件挂起不能拖死整个插件系统 */
+        await Promise.race([
+          Promise.resolve(p.init(workbench, MX)),
+          new Promise((_,rej)=>setTimeout(()=>rej(new Error('init timeout (8s)')), 8000))
+        ]);
         const dt=(performance.now()-t0).toFixed(1);
         console.log(`[plugin] ${p.name} v${p.version||'?'} ready in ${dt}ms`);
       }catch(e){

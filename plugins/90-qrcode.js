@@ -29,8 +29,8 @@ MX.plug.register({
     }
 
     /* 自定义函数插入位置：MX.QR */
-    window.insertQRCode = function(){
-      const text = prompt('二维码内容（网址/文本/数字）：','https://myexcel.app');
+    window.insertQRCode = async function(){
+      const text = await MX.ui.prompt('二维码内容（网址/文本/数字）：','https://myexcel.app','插入二维码');
       if(text==null) return;
       const cell = ensureCell(cur.r, cur.c);
       cell.qr = { text, size:4 };

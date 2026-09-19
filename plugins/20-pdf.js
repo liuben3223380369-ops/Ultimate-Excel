@@ -34,9 +34,9 @@ MX.plug.register({
       });
     }
 
-    function exportPDF(){
+    async function exportPDF(){
       const opts = {
-        orientation: confirm('横向布局？\n(确定=横向,取消=纵向)') ? 'landscape':'portrait',
+        orientation: (await MX.ui.confirm('横向布局？\n(确定=横向,取消=纵向)','导出 PDF')) ? 'landscape':'portrait',
         format: 'a4'
       };
       toast('正在生成 PDF…');

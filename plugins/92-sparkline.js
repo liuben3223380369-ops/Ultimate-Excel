@@ -78,8 +78,8 @@ MX.plug.register({
       MX._pendingHFFns['SPARK_AREA'] = function(){ return makeSpark(Array.from(arguments), 'area'); };
     }
 
-    window.insertSparkline = function(){
-      const type = prompt('类型 (line / bar / area)：', 'line');
+    window.insertSparkline = async function(){
+      const type = await MX.ui.prompt('类型 (line / bar / area)：', 'line', '插入迷你图');
       if(!type) return;
       const cell = ensureCell(cur.r, cur.c);
       cell.spark = { type, range: '本行右侧单元格' };

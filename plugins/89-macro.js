@@ -319,9 +319,9 @@ MX.plug.register({
       $('mpNew').onclick = () => newMacro();
       $('mpRun').onclick = () => { saveCurrent(); runMacro(currentEditName); };
       $('mpSave').onclick = () => { saveCurrent(); toast('宏已保存'); };
-      $('mpDel').onclick = () => {
+      $('mpDel').onclick = async () => {
         if (!currentEditName) return;
-        if (confirm('删除宏 "' + currentEditName + '"？')) {
+        if (await MX.ui.confirm('删除宏 "' + currentEditName + '"？','删除宏')) {
           MACROS = MACROS.filter(m => m.name !== currentEditName);
           saveMacros(); renderList(); editMacro(MACROS[0] && MACROS[0].name);
         }

@@ -91,7 +91,7 @@ MX.plug.register({
     }
 
     window.exportEncrypted = async function(){
-      const pw = prompt('设置打开密码（至少 6 位）：');
+      const pw = await MX.ui.prompt('设置打开密码（至少 6 位）：','','工作簿加密');
       if(!pw || pw.length<6){ toast('密码太短'); return; }
       const enc = await encryptWB(pw);
       const name = (WB.name||'工作簿') + '.myexcel.enc';
@@ -105,7 +105,7 @@ MX.plug.register({
       inp.onchange = async e=>{
         const f = e.target.files[0]; if(!f) return;
         const buf = await f.arrayBuffer();
-        const pw = prompt('输入密码：');
+        const pw = await MX.ui.prompt('输入密码：','','解密工作簿');
         if(!pw) return;
         try{
           const json = await decryptWB(new Uint8Array(buf), pw);

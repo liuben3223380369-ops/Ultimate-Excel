@@ -23,10 +23,10 @@ MX.plug.register({
       MX._pendingHFFns['BARCODE'] = function(text){ return makeBarcode(String(text||'')) ? '[条形码]' : '#ERROR!'; };
     }
 
-    window.insertBarcode = function(){
-      const text = prompt('条形码内容（数字/字母）：','1234567890');
+    window.insertBarcode = async function(){
+      const text = await MX.ui.prompt('条形码内容（数字/字母）：','1234567890','插入条形码');
       if(text==null) return;
-      const format = prompt('格式 (CODE128 / EAN13 / EAN8 / UPC / CODE39 / ITF14)：','CODE128');
+      const format = await MX.ui.prompt('格式 (CODE128 / EAN13 / EAN8 / UPC / CODE39 / ITF14)：','CODE128','条形码格式');
       if(!format) return;
       const cell = ensureCell(cur.r, cur.c);
       cell.barcode = { text, format };
