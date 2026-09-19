@@ -37,11 +37,11 @@ jobs:
         run: |
           $asar = "dist\win-unpacked\resources\app.asar"
           if (-not (Test-Path $asar)) { Write-Error "FATAL: app.asar not found"; exit 1 }
-          $list = npx asar list $asar
-          $plugins = $list | Select-String -Pattern "^/(plugins)/"
-          Write-Output ("plugins files in asar: " + ($plugins | Measure-Object -Line).Lines)
-          if ($list -notmatch "plugins[/\\]15-functions\.js") { Write-Error "FATAL: plugins/15-functions.js missing from app.asar"; exit 1 }
-          if ($list -notmatch "plugins[/\\]89-macro\.js") { Write-Error "FATAL: plugins/89-macro.js missing from app.asar"; exit 1 }
+          $list = (npx asar list $asar) -join "`n"
+          $n = ([regex]::Matches($list, "plugins[/\\]")).Count
+          Write-Output "plugins entries in asar: $n"
+          if ($list -notmatch "15-functions\.js") { Write-Error "FATAL: plugins/15-functions.js missing"; exit 1 }
+          if ($list -notmatch "89-macro\.js") { Write-Error "FATAL: plugins/89-macro.js missing"; exit 1 }
           Write-Output "OK: plugins verified in app.asar"
 
       - name: List artifacts
