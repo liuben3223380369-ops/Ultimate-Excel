@@ -32,6 +32,8 @@
       "preload.js",
       "index.html",
       "lib/**/*",
+      "plugins/**/*",
+      "assets/**/*",
       "icon.ico",
       "!**/*.md",
       "!**/_*",
@@ -49,7 +51,7 @@
       "verifyUpdateCodeSignature": false
     },
     "portable": {
-      "artifactName": "极致表格-MyExcel-${version}-portable.exe",
+      "artifactName": "MyExcel-${version}-portable.exe",
       "splashImage": null,
       "requestExecutionLevel": "user"
     },
@@ -59,12 +61,12 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "极致表格 MyExcel",
+      "shortcutName": "MyExcel",
       "license": "LICENSE.txt",
-      "artifactName": "极致表格-MyExcel-Setup-${version}.${ext}"
+      "artifactName": "MyExcel-Setup-${version}.${ext}"
     },
     "asar": true,
-    "asarUnpack": ["lib/**/*"],
+    "asarUnpack": ["lib/**/*", "plugins/**/*"],
     "compression": "maximum",
     "removePackageScripts": true,
     "nodeGypRebuild": false
