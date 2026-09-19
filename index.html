@@ -1677,6 +1677,7 @@ function loadAuto(){
 const MENUS={
   '文件':[
     {label:'新建工作簿',acc:'Ctrl+N',fn:()=>newWorkbook(true)},
+    {label:'载入示例工作簿（函数演示）',fn:loadDemo},
     {label:'打开…',acc:'Ctrl+O',fn:openLocalXLSX},
     {label:'保存为 Excel(.xlsx)',acc:'Ctrl+S',fn:saveXLSX},
     {label:'保存为工程文件(.json)',fn:saveJSON},'-',
@@ -1824,9 +1825,15 @@ $('gridWrap').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();zoom
 
 /* ================= 新建/初始化 ================= */
 function newWorkbook(ask){
-  if(ask&&!confirm('新建将替换当前工作簿（请先保存）。继续？'))return;
-  WB={name:'工作簿'+(Math.floor(Math.random()*9)+1),sheets:[newSheet('Sheet1')],active:0,zoom:1};
+  if(ask&&!confirm('新建空白工作簿？当前内容将被替换（请先保存）。'))return;
+  WB={name:'工作簿1',sheets:[newSheet('Sheet1')],active:0,zoom:1};
+  hfBuild();buildGrid();renderTabs();autosave();
+  toast('已新建空白工作簿');
+}
+function loadDemo(){
+  WB={name:'示例工作簿',sheets:[newSheet('Sheet1')],active:0,zoom:1};
   demoData();hfBuild();buildGrid();renderTabs();autosave();
+  toast('已载入示例工作簿');
 }
 function demoData(){
   const s=WB.sheets[0];
@@ -1917,7 +1924,6 @@ async function startApp(){
     buildMenus();buildRibbon();
     if(!loadAuto()){
       WB={name:'工作簿1',sheets:[newSheet('Sheet1')],active:0,zoom:1};
-      demoData();
     }
     if(!WB.sheets[WB.active].nc)WB.sheets[WB.active].nc=32;
     if(!WB.sheets[WB.active].nr)WB.sheets[WB.active].nr=120;
