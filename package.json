@@ -1,0 +1,72 @@
+{
+  "name": "ultimate-excel-myexcel",
+  "version": "1.0.0",
+  "description": "极致表格 MyExcel · Pro — 开源免费的 Excel/WPS 替代品，由 HyperFormula (400+ 函数) + SheetJS (xlsx 读写) 驱动，单文件 EXE 桌面应用",
+  "main": "main.js",
+  "author": "MyExcel",
+  "license": "GPL-3.0",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "pack": "electron-builder --dir",
+    "build:portable": "electron-builder --win portable --x64",
+    "build:installer": "electron-builder --win nsis --x64",
+    "build:all": "electron-builder --win portable nsis --x64",
+    "postinstall": "echo 已安装依赖，下一步：npm run build:portable 输出单文件 EXE"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "com.myexcel.app",
+    "productName": "极致表格 MyExcel",
+    "copyright": "Copyright © 2026 MyExcel · GPL-3.0",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "lib/**/*",
+      "icon.ico",
+      "!**/*.md",
+      "!**/_*",
+      "!**/.DS_Store"
+    ],
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "nsis",      "arch": ["x64"] }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "极致表格-MyExcel-${version}-${arch}.${ext}",
+      "requestedExecutionLevel": "asInvoker",
+      "publisherName": "MyExcel",
+      "verifyUpdateCodeSignature": false
+    },
+    "portable": {
+      "artifactName": "极致表格-MyExcel-${version}-portable.exe",
+      "splashImage": null,
+      "requestExecutionLevel": "user"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "极致表格 MyExcel",
+      "license": "LICENSE.txt",
+      "artifactName": "极致表格-MyExcel-Setup-${version}.${ext}"
+    },
+    "asar": true,
+    "asarUnpack": ["lib/**/*"],
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "nodeGypRebuild": false
+  }
+}

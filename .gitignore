@@ -1,0 +1,24 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 工具与临时
+.tools/
+*.log
+*.tmp
+
+# 系统与 IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 构建产物
+dist/
+build/
+out/
+
+# 测试输出
+stress-test/*.json
+stress-test/*.log
+coverage/
