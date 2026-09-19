@@ -43,10 +43,19 @@ jobs:
 
       - name: Prepare web assets (www)
         run: |
+          rm -rf www
           mkdir -p www
-          cp index.html www/
-          cp -r lib plugins assets www/
-          ls -la www/
+          cp -v index.html www/
+          cp -rv lib www/lib
+          cp -rv plugins www/plugins
+          [ -d assets ] && [ "$(ls -A assets 2>/dev/null)" ] && cp -rv assets www/assets || mkdir -p www/assets
+          echo "=== www 文件统计 ==="
+          find www -type f | wc -l
+          echo "=== www/plugins 完整文件列表 ==="
+          find www/plugins -type f | sort
+          echo "=== 校验 15-functions.js 和 89-macro.js 是否存在 ==="
+          test -f www/plugins/15-functions.js && echo "OK: 15-functions.js" || (echo "FATAL: 15-functions.js missing"; exit 1)
+          test -f www/plugins/89-macro.js && echo "OK: 89-macro.js" || (echo "FATAL: 89-macro.js missing"; exit 1)
 
       - name: Setup Capacitor project
         run: |
