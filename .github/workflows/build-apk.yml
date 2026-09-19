@@ -84,3 +84,20 @@ jobs:
           path: out/MyExcel-1.0.0.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view v1.1.0 >/dev/null 2>&1 || \
+            gh release create v1.1.0 \
+              --title "极致表格 Ultimate-Excel v1.1.0" \
+              --notes "Android 版（MyExcel-1.0.0.apk）。
+
+          ## 本版亮点
+          - 函数引擎扩展至 500 个（金融债券族/统计矩阵/动态数组/文本函数）
+          - 全新 JavaScript 宏系统（菜单打开宏面板）
+
+          ## 安装说明
+          - 下载 APK 后直接安装（需允许安装未知来源应用）"
+          gh release upload v1.1.0 out/MyExcel-1.0.0.apk --clobber

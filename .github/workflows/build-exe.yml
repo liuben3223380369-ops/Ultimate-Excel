@@ -42,3 +42,25 @@ jobs:
             dist/*.exe
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $files = Get-ChildItem dist -Filter *.exe | ForEach-Object { $_.FullName }
+          gh release view v1.1.0 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create v1.1.0 @files `
+              --title "极致表格 Ultimate-Excel v1.1.0" `
+              --notes "Windows 桌面版（绿色版 + 安装版）。
+
+          ## 本版亮点
+          - 函数引擎扩展至 500 个（金融债券族/统计矩阵/动态数组/文本函数）
+          - 全新 JavaScript 宏系统（Ctrl+Alt+M 打开宏面板）
+
+          ## 安装说明
+          - 便携版（-Portable.exe）：下载后双击即可运行，无需安装
+          - 安装版（-Setup.exe）：双击安装到系统"
+          } else {
+            gh release upload v1.1.0 @files --clobber
+          }
