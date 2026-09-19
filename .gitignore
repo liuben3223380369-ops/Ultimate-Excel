@@ -22,3 +22,5 @@ out/
 stress-test/*.json
 stress-test/*.log
 coverage/
+.playwright-cli/
+

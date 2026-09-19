@@ -282,9 +282,15 @@ input[type=color].tcol{width:26px;height:26px;padding:0;border:1px solid #cfd8d2
 <script src="lib/marked.min.js"></script>
 <script src="lib/lodash.min.js"></script>
 <script src="lib/diff_match_patch.js"></script>
+<!-- formulajs 统计扩展（依赖 numeric / numeral / jStat，须先于 15-functions.js 加载） -->
+<script src="lib/numeric.min.js"></script>
+<script src="lib/numeral.js"></script>
+<script src="lib/jstat.min.js"></script>
+<script src="lib/formula.min.js"></script>
 <!-- 插件系统（每个插件独立文件，可单独启用） -->
 <script src="plugins/00-core.js"></script>
 <script src="plugins/10-charts.js"></script>
+<script src="plugins/15-functions.js"></script>
 <script src="plugins/20-pdf.js"></script>
 <script src="plugins/30-csv.js"></script>
 <script src="plugins/40-cf.js"></script>
@@ -292,6 +298,7 @@ input[type=color].tcol{width:26px;height:26px;padding:0;border:1px solid #cfd8d2
 <script src="plugins/60-filter.js"></script>
 <script src="plugins/70-comments.js"></script>
 <script src="plugins/80-hyperlink.js"></script>
+<script src="plugins/89-macro.js"></script>
 <script src="plugins/90-qrcode.js"></script>
 <script src="plugins/91-barcode.js"></script>
 <script src="plugins/92-sparkline.js"></script>
@@ -1922,7 +1929,7 @@ async function startApp(){
     if(window.MX && MX.plug){
       await MX.plug.boot(WB);
       /* 注入 HF 自定义函数 */
-      if(MX._pendingHFFns && window.HF && HF.customFunctions){
+      if(MX._pendingHFFns && window.HyperFormula && HF.customFunctions){
         try{
           const cf = {};
           for(const [name,fn] of Object.entries(MX._pendingHFFns)) cf[name]=fn;

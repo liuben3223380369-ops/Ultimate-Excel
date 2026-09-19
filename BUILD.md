@@ -81,7 +81,7 @@ npm start
 - **轻量模式**:`1000 行 × 200 列` 是单页最大规模,适合个人/小型团队用例。超过规模后会触发一次性重建警告;更大工作簿可以分多 Sheet 拆分。
 - **图表**:基础 4 种 (柱/折/饼/散点) 自绘,Excel 打开后仍是原生图表对象。
 - **数据透视**:暂未实现 (HyperFormula 只负责公式引擎)。
-- **VBA/宏**:不兼容,这是设计目标 (现代 web 替代方案),不是缺陷。
+- **VBA/宏**：不兼容 VBA 二进制宏（.xlsm 宏表），但内置 **JavaScript 宏系统**（`plugins/89-macro.js`）：宏管理器面板（Ctrl+Alt+M）、沙箱 API（读写单元格/区域/样式/工作表）、自动运行宏、逐宏快捷键、JSON 导入导出、localStorage 持久化，并带静态安全检查。
 
 ## 8. 文件清单
 
@@ -95,7 +95,16 @@ excel-app/
 ├── 启动极致表格.bat         # 一键启动 (Windows 优先 EXE)
 ├── lib/
 │   ├── hyperformula.min.js # 400+ 公式函数
+│   ├── formula.min.js      # formulajs 统计/矩阵扩展（依赖下三行）
+│   ├── numeric.min.js      # 矩阵运算（formulajs 依赖）
+│   ├── jstat.min.js        # 统计分布（formulajs 依赖）
+│   ├── numeral.js          # 数字格式化（formulajs 依赖）
 │   └── xlsx.full.min.js    # xlsx 读写
+├── plugins/
+│   ├── 00-core.js          # 插件框架（面板/右键菜单/事件）
+│   ├── ...                 # 图表/PDF/CSV/条件格式/校验/筛选/批注/超链接/QR/条码/迷你图/Markdown/图片/i18n/主题/模板/历史/安全
+│   ├── 15-functions.js     # 77 个扩展函数（金融/统计/矩阵/动态数组/文本），HF 总数 423→500
+│   └── 89-macro.js         # JavaScript 宏系统（面板/沙箱 API/持久化/自动运行/快捷键/安全检查）
 └── build/
     ├── icon.ico
     ├── icon-{16,32,...}.png
