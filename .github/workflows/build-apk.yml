@@ -26,10 +26,17 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install Android SDK components (runner 预装 SDK，补装 Capacitor 6 所需)
+      - name: Ensure Android SDK components (runner 预装 SDK，容错补装 Capacitor 6 所需)
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" >/dev/null
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$ANDROID_HOME/cmdline-tools/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+            "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0" >/dev/null 2>&1 || true
+            echo "SDK components ready"
+          else
+            echo "使用运行器预装 SDK（未找到 sdkmanager，跳过补装）"
+          fi
 
       - name: Prepare web assets (www)
         run: |
