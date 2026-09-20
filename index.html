@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>极致表格 MyExcel</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;user-select:none}
@@ -99,6 +100,32 @@ input[type=color].tcol{width:26px;height:26px;padding:0;border:1px solid #cfd8d2
 #loadMask .sp{width:36px;height:36px;border:3px solid #d5ecdf;border-top-color:#217346;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadMask.hide{opacity:0;pointer-events:none}
+/* ===== 窄屏 / 移动端适配（APK、手机浏览器） ===== */
+@media (max-width:820px){
+  /* 工具栏：42 个按钮改为单行横向滚动，不再折行吃掉纵向空间 */
+  #ribbon{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:4px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #ribbon::-webkit-scrollbar{display:none}
+  .tbtn{height:34px;min-width:34px;font-size:14px;flex:none}
+  .tsep{margin:0 3px}
+  #menuBar{overflow-x:auto;scrollbar-width:none}
+  #menuBar::-webkit-scrollbar{display:none}
+  #menuBar .menu{padding:0 10px;flex:none}
+  /* 弹窗不再固定 440px 最小宽度（手机竖屏仅 360px 会导致溢出） */
+  .modal .box{min-width:0;width:94vw;max-width:94vw}
+  .modal .box .body{max-height:64vh;overflow:auto}
+  .modal .box h3{padding:12px 14px;font-size:14px}
+  .modal .box .foot{padding:10px 14px;flex-wrap:wrap}
+  .frow{flex-wrap:wrap}
+  #statusBar{gap:8px;padding:0 8px;font-size:11px;overflow-x:auto;scrollbar-width:none}
+  #statusBar::-webkit-scrollbar{display:none}
+  #statusBar .st{flex:none}
+  #sheetBar{height:34px}
+  .sTab{padding:0 12px;line-height:30px}
+  #nameBox{width:78px}
+  #formulaBar{height:34px}
+  #zoomBox{gap:4px}
+  #zoomBox button{width:26px;height:26px}
+}
 @media print{body *{visibility:hidden}#gridWrap,#gridWrap *{visibility:visible}#gridWrap{position:absolute;left:0;top:0;width:100%;height:auto;overflow:visible}}
 </style>
 </head>
@@ -190,7 +217,8 @@ input[type=color].tcol{width:26px;height:26px;padding:0;border:1px solid #cfd8d2
     <select id="cfOp"><option value=">">&gt;</option><option value=">=">&gt;=</option><option value="<">&lt;</option><option value="<=">&lt;=</option><option value="==">=</option><option value="between">之间</option></select>
     <input id="cfValue" placeholder="值" style="width:80px">
     <input id="cfValue2" placeholder="值2" style="width:80px">
-    <input type="color" id="cfBg" value="#fff3cd">
+    <label style="font-size:12px;color:#666">底色</label><input type="color" id="cfBg" value="#fff3cd">
+    <label style="font-size:12px;color:#666">字色</label><input type="color" id="cfFg" value="#c0392b">
     <button class="btn" id="cfNew">添加</button>
     <button class="btn ghost" id="cfClear">清除全部</button>
   </div>
@@ -1937,6 +1965,8 @@ function registerPluginUI(){
   /* 上下文菜单 */
   const ctxList = MX.plug._ctxItems || [];
   window._pluginCtxItems = ctxList;
+  /* 插件按钮/菜单是启动后才注入的，让 i18n 重新翻译一遍 */
+  try{ if(MX.i18n) MX.i18n.apply(); }catch(e){ console.warn('i18n apply:', e); }
   /* 快捷键 */
   const shorts = MX.plug._shortcuts || [];
   for(const s of shorts){

@@ -83,13 +83,16 @@ MX.plug.register({
     /* 单元格点击：弹出列表选项 */
     const origStartEdit = window.startEdit;
     window.startEdit = function(initial){
-      const r=cur.r,c=cur.c,td=$('ed');
+      const r=cur.r,c=cur.c;
+      /* 取当前单元格的真实 DOM 作为下拉列表锚点（旧代码误用 $('ed')=null，双击即抛错，
+         既弹不出下拉，还会连带破坏正常编辑） */
+      const td = tdMap[key(r,c)];
       const rules = (WB.sheets[WB.active].validations||[]).flatMap(expand);
       const rule = rules.find(rule=>r>=rule.r0&&r<=rule.r1&&c>=rule.c0&&c<=rule.c1);
-      if(rule && rule.type==='list' && (rule.list||rule.allowed)){
+      if(td && rule && rule.type==='list' && (rule.list||rule.allowed)){
         const items = rule.list || rule.allowed;
-        const html = items.map(it=>`<div class="dv-opt" style="padding:4px 12px;cursor:pointer">${esc(it)}</div>`).join('');
-        showFloatingMenu($('ed'), html, (el)=>{
+        const html = items.map(it=>`<div class="dv-opt" style="padding:6px 12px;cursor:pointer">${esc(it)}</div>`).join('');
+        showFloatingMenu(td, html, (el)=>{
           el.style.position='absolute'; el.style.background='#fff'; el.style.border='1px solid #aaa'; el.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'; el.style.zIndex='1000'; el.style.maxHeight='180px'; el.style.overflowY='auto';
           el.querySelectorAll('.dv-opt').forEach(o=>{
             o.onmouseover = ()=>o.style.background='#e3f2fd';

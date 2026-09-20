@@ -26,7 +26,7 @@ MX.plug.register({
           WB.active = i;
           renderSheet();
           await new Promise(r=>setTimeout(r,80));
-          const target = document.querySelector('.gridInner') || document.querySelector('#grid') || document.body;
+          const target = document.querySelector('#gridInner') || document.querySelector('#grid') || document.body;
           const cv = await htmlToCanvas(target);
           pages.push({ name: sheetNames[i], dataUrl: cv.toDataURL('image/png'), w: cv.width, h: cv.height });
         }

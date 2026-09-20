@@ -176,8 +176,9 @@ MX.plug.register({
         const op = $('cfOp').value;
         const value = $('cfValue').value;
         const value2 = $('cfValue2').value;
-        const bg = $('cfBg').value;
-        const fg = $('cfFg').value;
+        const bg = $('cfBg') ? $('cfBg').value : '';
+        const fgEl = $('cfFg');
+        const fg = fgEl ? fgEl.value : '';
         if(!r){ toast('请填写范围'); return; }
         s.cfRules = s.cfRules || [];
         s.cfRules.push({ range:r, type, op, value, value2, bg, fg });
